@@ -5,6 +5,83 @@ Supports multiple data providers and can be hosted statically and dynamically.
 
 Demo: https://leroy0211.github.io/statuspage/
 
+## Concept
+
+Status pages are built using `systems`, `incidents` and `incident updates`.
+
+Systems are formatted as follows.
+
+```js
+# systems.json
+[
+    {
+        "name": "CDN",
+        "status": {
+            "name": "degraded performance",
+            "color": "FFA500"
+        }
+    },
+    {
+        "name": "Website",
+        "status": {
+            "name": "major outage",
+            "color": "FF4D4D"
+        }
+    }
+]
+```
+
+Incidents and incident updates are formatted as follows. 
+
+Incident body and incident update body can support markdown.
+
+```js
+# incidents.json
+[
+  {
+    "created": "2021-03-05T20:26:09Z",
+    "title": "Website is down",
+    "systems": [
+      {
+        "name": "CDN"
+      }
+    ],
+    "severity": {
+      "name": "major outage",
+      "color": "FF4D4D"
+    },
+    "closed": false,
+    "body": "We are experiencing major issues with the website",
+    "updates": [
+      {
+        "created": "2021-03-05T21:26:30Z",
+        "body": "We are investigating..."
+      }
+    ]
+  },
+  {
+    "created": "2021-03-02T11:32:18Z",
+    "title": "CDN performance degraged",
+    "systems": [
+      {
+        "name": "CDN"
+      },
+      {
+        "name": "Website"
+      }
+    ],
+    "severity": {
+      "name": "degraded performance",
+      "color": "FFA500"
+    },
+    "closed": true,
+    "body": "```foo=bar```",
+    "updates": []
+  }
+]
+
+```
+
 ## Data providers
 
 This projects comes packaged with a few data providers:
