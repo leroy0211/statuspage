@@ -46,12 +46,12 @@ export default function Home({config, systems, incidents, panels}) {
             <main className="container mt-3" style={{maxWidth: 50 + "rem"}}>
 
                 <section className="container" id="main">
-                    {!Object.keys(panels).length && (
+                    {(Object.keys(panels).length === 0) && (
                         <div className="card bg-success text-white p-3 my-1">
                             <strong>All Systems Operational</strong>
                         </div>
                     )}
-                    {Object.keys(panels).length && Object.keys(panels).map(status => {
+                    {Object.keys(panels).length >= 0 && Object.keys(panels).map(status => {
                         return (
                             <div className="card text-white p-3 my-1 text-bold" style={{backgroundColor: getColor(panels[status][0].status.color)}}>
                                 <strong>{status} on {panels[status].map(p => p.name).join(",")}.</strong>
