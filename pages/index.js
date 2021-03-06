@@ -1,37 +1,8 @@
 import marked from "marked";
-import {useRef} from "react";
 import Parser from "html-react-parser";
 import Severity, {getColor, SeverityBadge} from "../components/status/Severity";
-import Localize from "../components/Localize";
-
-export const useLoadScripts = (scripts) => {
-    const scriptsLoaded = useRef(false);
-    if (typeof window !== "undefined" && !scriptsLoaded.current) {
-        scripts.forEach((script) => {
-            const element = document.createElement(script.tagName || "script");
-            const props = script.props || {src: script, type: "text/javascript"}
-            Object.keys(props).forEach(prop => {
-                element[prop] = props[prop]
-            })
-            const position = document.querySelector("head");
-            position.appendChild(element);
-        });
-        scriptsLoaded.current = true;
-    }
-};
 
 export default function Home({config, systems, incidents, panels}) {
-    useLoadScripts([
-        {
-            tagName: "link",
-            props: {
-                rel: "prefetch",
-                href: "translations.ini",
-                type: "application/l10n"
-            }
-        },
-        "//cdn.jsdelivr.net/npm/webl10n@1.0.0/l10n.min.js",
-    ]);
     return (
         <>
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -59,7 +30,7 @@ export default function Home({config, systems, incidents, panels}) {
                         )
                     })}
 
-                    <Localize as="h2" className="mt-2">Systems</Localize>
+                    <h2 className="mt-2">Systems</h2>
                     <div className="card">
                         <ul className="list-group list-group-flush">
                             {systems.map(system => (
@@ -70,8 +41,7 @@ export default function Home({config, systems, incidents, panels}) {
                             ))}
                         </ul>
                     </div>
-
-                    <Localize as="h2" className="my-4">Incidents</Localize>
+                    <h2 className="my-4">Incidents</h2>
 
                     {incidents.map(incident => (
                         <div className="incident">
