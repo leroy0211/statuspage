@@ -1,0 +1,23 @@
+[
+    {
+        "name": "CDN",
+        "status": {
+            "name": "operational",
+            "color": "9a0000"
+        }
+    },
+    {
+        "name": "GRAPHQL",
+        "status": {
+            "name": "major outage",
+            "color": "blue"
+        }
+    },
+    {
+        "name": "Website",
+        "status": {
+            "name": "investigating",
+            "color": "ff572b"
+        }
+    }
+]

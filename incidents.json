@@ -1,0 +1,32 @@
+[
+  {
+    "created": "2021-03-05T20:26:09Z",
+    "title": "Website is down",
+    "systems": [{
+      "name": "CDN"
+    }],
+    "severity": {
+      "name":"investigating",
+      "color": "9a0000"
+    },
+    "closed": false,
+    "body": "We are experiencing major issues with the website",
+    "updates": []
+  },
+  {
+    "created": "2021-03-02T11:32:18Z",
+    "title": "All is lost again",
+    "systems": [{
+      "name": "CDN"
+    },{
+      "name": "FOO"
+    }],
+    "severity": {
+      "name":"major outage",
+      "color": "blue"
+    },
+    "closed": true,
+    "body": "```foo=bar```",
+    "updates": []
+  }
+]

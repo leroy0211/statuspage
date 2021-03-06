@@ -1,65 +1,137 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import marked from "marked";
+import {useRef} from "react";
+import Parser from "html-react-parser";
+import Severity, {SeverityBadge} from "../components/status/Severity";
+import Localize from "../components/Localize";
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+export const useLoadScripts = (scripts) => {
+    const scriptsLoaded = useRef(false);
+    if (typeof window !== "undefined" && !scriptsLoaded.current) {
+        scripts.forEach((script) => {
+            const element = document.createElement(script.tagName || "script");
+            const props = script.props || {src: script, type: "text/javascript"}
+            Object.keys(props).forEach(prop => {
+                element[prop] = props[prop]
+            })
+            const position = document.querySelector("head");
+            position.appendChild(element);
+        });
+        scriptsLoaded.current = true;
+    }
+};
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+export default function Home({config, systems, incidents}) {
+    useLoadScripts([
+        {
+            tagName: "link",
+            props: {
+                rel: "prefetch",
+                href: "translations.ini",
+                type: "application/l10n"
+            }
+        },
+        "//cdn.jsdelivr.net/npm/webl10n@1.0.0/l10n.min.js",
+    ]);
+    return (
+        <>
+            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                <div className="container">
+                    <a className="navbar-brand" href="/">
+                        <img src={config.logo} alt="" height="24" className="d-inline-block align-top"/>
+                        {config.title}
+                    </a>
+                </div>
+            </nav>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+            <main className="container" style={{maxWidth: 50 + "rem"}}>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+                <section className="container" id="main">
+                    <div className="card bg-success text-white p-3 mb-3">
+                        <strong>All Systems Operational</strong>
+                    </div>
+                    <div className="card bg-warning text-white p-3 mb-3 text-bold">
+                        <strong>Degraded performance on System 1, System 2.</strong>
+                    </div>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+                    <Localize as="h2" className="mt-2">Systems</Localize>
+                    <div className="card">
+                        <ul className="list-group list-group-flush">
+                            {systems.map(system => (
+                                <li className="list-group-item">
+                                    {system.name}
+                                    <Severity className="float-right" color={system.status.color}>{system.status.name}</Severity>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+                    <Localize as="h2" className="my-4">Incidents</Localize>
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+                    {incidents.map(incident => (
+                        <div className="incident">
+                            <span className="date">{ incident.created }</span>
+                            {incident.systems.map(system => (
+                                <span className="badge bg-dark text-white float-right ml-1">{ system.name }</span>
+                            ))}
+                            {incident.closed && (
+                                <SeverityBadge color="green">
+                                    resolved
+                                </SeverityBadge>
+                            )}
+                            {!incident.closed && (
+                                <SeverityBadge color={incident.severity.color}>
+                                    { incident.severity.name }
+                                </SeverityBadge>
+                            )}
+                            <hr/>
+                            <div className="title">{ incident.title }</div>
+                            <p>{ Parser(marked(incident.body)) }</p>
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+                            {incident.updates.map(update => (
+                                <>
+                                    <p><em>Update {update.created}</em></p>
+                                    <p>{Parser(marked(update.body))}</p>
+                                </>
+                            ))}
+                        </div>
+                    ))}
+
+                    {incidents.length === 0 && (
+                        <em data-l10n-id="no-incidents">No incidents in the past 90 days.</em>
+                    )}
+
+                </section>
+
+
+                <footer className="footer">
+                    <section className="container">
+                        <hr/>
+                        <p>{config.footer}</p>
+                    </section>
+                </footer>
+
+            </main>
+        </>
+    )
+}
+
+export const getStaticProps = async () => {
+
+    const config = require("../config");
+
+    const Provider = require(`../src/${config.provider.name}`);
+    const provider = new Provider(config.provider.config);
+
+    return {
+        props: {
+            config: {
+                title: "Statuspage",
+                logo: "https://raw.githubusercontent.com/jayfk/statuspage/master/template/favicon.png",
+                favicon: "https://raw.githubusercontent.com/jayfk/statuspage/master/template/favicon.png",
+                footer: "blabla"
+            },
+            systems: await provider.getSystems(),
+            incidents: await provider.getIncidents()
+        }
+    }
 }
