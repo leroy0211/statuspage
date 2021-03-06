@@ -1,6 +1,7 @@
 const {
     SYSTEM_LABEL_COLOR,
-    COLORED_LABELS
+    COLORED_LABELS,
+    OPERATIONAL_COLOR
 } = require("../config")
 
 function fetchSystems(labels) {
@@ -18,7 +19,7 @@ function get_systems(labels, issues) {
     let systems = fetchSystems(labels).map(system => {
         return {
             name: system.name,
-            status: {name: "operational", color: "0DE877"}
+            status: {name: "operational", color: OPERATIONAL_COLOR}
         }
     });
 

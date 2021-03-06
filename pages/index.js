@@ -1,83 +1,29 @@
-import marked from "marked";
-import Parser from "html-react-parser";
-import Severity, {getColor, SeverityBadge} from "../components/status/Severity";
+import NavigationBar from "../components/NavigationBar";
+import Systems from "../components/core/Systems";
+import Incidents from "../components/core/Incidents";
+import NoIncidents from "../components/core/NoIncidents";
+import PageStatus from "../components/core/PageStatus";
 
-export default function Home({config, systems, incidents, panels}) {
+export default function Home({config, systems, incidents, panels, navigation}) {
     return (
         <>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
-                <div className="container">
-                    <a className="navbar-brand" href="/">
-                        <img src={config.logo} alt="" height="24" className="d-inline-block align-top"/>
-                        {config.title}
-                    </a>
-                </div>
-            </nav>
+            <NavigationBar navigation={navigation} />
+            {/*<img className="img-fluid" src="https://user-images.githubusercontent.com/19292210/60553863-044dd200-9cea-11e9-987e-7db84449f215.png" />*/}
 
-            <main className="container mt-3" style={{maxWidth: 50 + "rem"}}>
+            <main className="container mt-3" style={{maxWidth: 1012 +"px"}}>
 
                 <section className="container" id="main">
-                    {(Object.keys(panels).length === 0) && (
-                        <div className="card bg-success text-white p-3 my-1">
-                            <strong>All Systems Operational</strong>
-                        </div>
-                    )}
-                    {Object.keys(panels).length >= 0 && Object.keys(panels).map(status => {
-                        return (
-                            <div className="card text-white p-3 my-1 text-bold" style={{backgroundColor: getColor(panels[status][0].status.color)}}>
-                                <strong>{status} on {panels[status].map(p => p.name).join(",")}.</strong>
-                            </div>
-                        )
-                    })}
+
+                    <PageStatus panels={panels} />
 
                     <h2 className="mt-2">Systems</h2>
-                    <div className="card">
-                        <ul className="list-group list-group-flush">
-                            {systems.map(system => (
-                                <li className="list-group-item">
-                                    {system.name}
-                                    <Severity className="float-right" color={system.status.color}>{system.status.name}</Severity>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Systems systems={systems} />
+
                     <h2 className="my-4">Incidents</h2>
+                    <Incidents incidents={incidents} />
 
-                    {incidents.map(incident => (
-                        <div className="incident">
-                            <span className="date">{ incident.created }</span>
-                            {incident.systems.map(system => (
-                                <span className="badge bg-dark text-white float-right ml-1">{ system.name }</span>
-                            ))}
-                            {incident.closed && (
-                                <SeverityBadge color="green">
-                                    resolved
-                                </SeverityBadge>
-                            )}
-                            {!incident.closed && (
-                                <SeverityBadge color={incident.severity.color}>
-                                    { incident.severity.name }
-                                </SeverityBadge>
-                            )}
-                            <hr/>
-                            <div className="title">{ incident.title }</div>
-                            <p>{ Parser(marked(incident.body)) }</p>
-
-                            {incident.updates.map(update => (
-                                <>
-                                    <p><em>Update {update.created}</em></p>
-                                    <p>{Parser(marked(update.body))}</p>
-                                </>
-                            ))}
-                        </div>
-                    ))}
-
-                    {incidents.length === 0 && (
-                        <em data-l10n-id="no-incidents">No incidents in the past 90 days.</em>
-                    )}
-
+                    <NoIncidents incidents={incidents} />
                 </section>
-
 
                 <footer className="footer">
                     <section className="container">
@@ -132,6 +78,35 @@ export const getStaticProps = async () => {
                 logo: "https://raw.githubusercontent.com/jayfk/statuspage/master/template/favicon.png",
                 favicon: "https://raw.githubusercontent.com/jayfk/statuspage/master/template/favicon.png",
                 footer: "blabla"
+            },
+            navigation: {
+                links: [
+                    [{
+                        name: "Help",
+                        url: "https://www.google.com"
+                    },{
+                        name: "Community",
+                        url: "https://www.google.nl"
+                    },{
+                        name: "Status",
+                        url: "#"
+                    }],
+                    [{
+                        name: "Logo",
+                        image: "https://raw.githubusercontent.com/jayfk/statuspage/master/template/favicon.png",
+                        url: "/"
+                    }],
+                    [{
+                        name: "Github",
+                        url: "https://github.com/leroy0211/statuspage"
+                    },{
+                        name: "Twitter",
+                        url: "https://twitter.com"
+                    },{
+                        name: "Subscribe",
+                        url: "#subscribe"
+                    }]
+                ]
             },
             systems,
             incidents,
