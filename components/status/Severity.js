@@ -4,8 +4,12 @@ function isHexColor (hex) {
         && !isNaN(Number('0x' + hex))
 }
 
+export const getColor = (color) => {
+    return isHexColor(color) ? `#${color}` : color;
+}
+
 const Severity = ({children, color, ...props}) => {
-    color = isHexColor(color) ? `#${color}` : color;
+    color = getColor(color)
 
     return (
         <span {...{
@@ -19,7 +23,7 @@ const Severity = ({children, color, ...props}) => {
 };
 
 export const SeverityBadge = ({children, color, ...props}) => {
-    color = isHexColor(color) ? `#${color}` : color;
+    color = getColor(color)
 
     return (
         <span {...{

@@ -1,7 +1,7 @@
 import marked from "marked";
 import {useRef} from "react";
 import Parser from "html-react-parser";
-import Severity, {SeverityBadge} from "../components/status/Severity";
+import Severity, {getColor, SeverityBadge} from "../components/status/Severity";
 import Localize from "../components/Localize";
 
 export const useLoadScripts = (scripts) => {
@@ -20,7 +20,7 @@ export const useLoadScripts = (scripts) => {
     }
 };
 
-export default function Home({config, systems, incidents}) {
+export default function Home({config, systems, incidents, panels}) {
     useLoadScripts([
         {
             tagName: "link",
@@ -43,15 +43,21 @@ export default function Home({config, systems, incidents}) {
                 </div>
             </nav>
 
-            <main className="container" style={{maxWidth: 50 + "rem"}}>
+            <main className="container mt-3" style={{maxWidth: 50 + "rem"}}>
 
                 <section className="container" id="main">
-                    <div className="card bg-success text-white p-3 mb-3">
-                        <strong>All Systems Operational</strong>
-                    </div>
-                    <div className="card bg-warning text-white p-3 mb-3 text-bold">
-                        <strong>Degraded performance on System 1, System 2.</strong>
-                    </div>
+                    {!Object.keys(panels).length && (
+                        <div className="card bg-success text-white p-3 my-1">
+                            <strong>All Systems Operational</strong>
+                        </div>
+                    )}
+                    {Object.keys(panels).length && Object.keys(panels).map(status => {
+                        return (
+                            <div className="card text-white p-3 my-1 text-bold" style={{backgroundColor: getColor(panels[status][0].status.color)}}>
+                                <strong>{status} on {panels[status].map(p => p.name).join(",")}.</strong>
+                            </div>
+                        )
+                    })}
 
                     <Localize as="h2" className="mt-2">Systems</Localize>
                     <div className="card">
@@ -115,12 +121,39 @@ export default function Home({config, systems, incidents}) {
     )
 }
 
+var groupBy = function (arr, criteria) {
+    return arr.reduce(function (obj, item) {
+
+        // Check if the criteria is a function to run on the item or a property of it
+        var key = typeof criteria === 'function' ? criteria(item) : item[criteria];
+
+        // If the key doesn't exist yet, create it
+        if (!obj.hasOwnProperty(key)) {
+            obj[key] = [];
+        }
+
+        // Push the value to the object
+        obj[key].push(item);
+
+        // Return the object to the next item in the loop
+        return obj;
+
+    }, {});
+};
+
 export const getStaticProps = async () => {
 
     const config = require("../config");
 
     const Provider = require(`../src/${config.provider.name}`);
     const provider = new Provider(config.provider.config);
+
+    const systems = await provider.getSystems();
+    const incidents = await provider.getIncidents();
+
+    const panels = groupBy(systems.filter(s => s.status.name !== "operational"), (system) => {
+        return system.status.name;
+    })
 
     return {
         props: {
@@ -130,8 +163,9 @@ export const getStaticProps = async () => {
                 favicon: "https://raw.githubusercontent.com/jayfk/statuspage/master/template/favicon.png",
                 footer: "blabla"
             },
-            systems: await provider.getSystems(),
-            incidents: await provider.getIncidents()
+            systems,
+            incidents,
+            panels
         }
     }
 }
