@@ -1,34 +1,85 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Statuspage using data providers
 
-## Getting Started
+This project contains a statuspage implementation using NextJS. 
+Supports multiple data providers and can be hosted statically and dynamically.
 
-First, run the development server:
+Demo: https://leroy0211.github.io/statuspage/
 
-```bash
-npm run dev
-# or
-yarn dev
+## Data providers
+
+This projects comes packaged with a few data providers:
+
+### Static json files
+
+provider: `static`
+
+```js
+# config.js
+module.exports = {
+    provider: {
+        name: "static",
+        config: {
+            systems: require("./systems.json"),
+            incidents: require("./incidents.json")
+        }
+    }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Github issues
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+provider: `github`
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+This provider uses issues, labels, and issue comments to generate the statuspage. 
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Every system is a label using label color: `171717`
+Every severity is a label using the following colors: 
 
-## Learn More
+* `1192FC` (blue) - investigating
+* `FFA500` (orange) - degraded performance
+* `FF4D4D` (red) - major outage
 
-To learn more about Next.js, take a look at the following resources:
+Every issue using at least one system label and one severity label is an incident. 
+All comments per issue, are considered incident updates.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Incidents are displayed for 90 days. After 90 days, incidents are removed. 
+When using static hosting, you need to build and deploy at least every day, otherwise incidents are never removed.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```js
+# config.js
+module.exports = {
+    provider: {
+        name: "github",
+        config: {
+            owner: "owner",
+            repo: "repository"
+        }
+    }
+}
+```
 
-## Deploy on Vercel
+## Host
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+You can host it dynamically or statically. 
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Static hosting
+```bash
+yarn install 
+yarn build
+yarn next export  # your static site is available in the /out directory
+```
+
+Tip! You can use github pages and github workflow to serve your static status page. Take a look in `/.github/workflows/main.yml` for an example.
+
+Dynamic hosting
+```bash
+yarn install 
+yarn build
+yarn start # a webserver will be started, serving the application
+```
+
+Development hosting (for local development)
+```bash
+yarn install 
+yarn dev  # a development webserver will be started
+```
